@@ -10,14 +10,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
+enum ROLE {
   USER
   ADMIN
 }
 
-enum School_Role {
+enum SCHOOL_ROLE {
   OWNER
   STAFF
+}
+
+enum TOKEN_TYPE {
+  REFRESH_TOKEN
+  VERIFY_EMAIL
 }
 
 model User {
@@ -29,12 +34,25 @@ model User {
   state          String?
   country        String?
   password       String
-  role           Role
+  role           ROLE
   email          String   @unique
   email_verified DateTime?
   created_at     DateTime? @default(now())
   updated_at     DateTime? @default(now())
-  Staff          Staff?
+  Staff          Staff[]
+  Tokens         Token[]
+}
+
+
+model Token {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  user_Id    String      @db.ObjectId
+  type       TOKEN_TYPE
+  token      String
+  created_at DateTime?   @default(now())
+  expire_at  DateTime   
+
+  user   User   @relation(fields: [user_Id], references: [id])
 }
 
 model School {
@@ -51,8 +69,8 @@ model School {
 model Staff {
   id         String      @id @default(auto()) @map("_id") @db.ObjectId
   school_id  String      @db.ObjectId
-  user_Id    String      @unique @db.ObjectId
-  role       School_Role
+  user_Id    String      @db.ObjectId
+  role       SCHOOL_ROLE
   title      String?
   created_at DateTime?   @default(now())
   updated_at DateTime?   @default(now())

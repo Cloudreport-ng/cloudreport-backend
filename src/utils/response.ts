@@ -3,7 +3,7 @@
  * @param {string} message Response message
  * @param {*} data Data to be returned
  * @param {boolean} success Status of the request
- */
+ * */
 
 const response = (message: string, data: any, success?: boolean) => {
     return {

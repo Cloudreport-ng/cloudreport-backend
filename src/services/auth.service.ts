@@ -4,22 +4,16 @@ const prisma = new PrismaClient();
 import jsonwebtoken from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
-// import ms from 'ms'
-// import { customAlphabet } from 'nanoid'
+import ms from 'ms'
+import { customAlphabet } from 'nanoid'
 
-// import MailService, { MailTemplate } from './mail.service'
-// import User from '../models/user.model'
-// import Token, { Tokens } from '../models/token.model'
+import  MailService, { MailTemplate } from './mail.service'
+
 
 import CustomError from '../utils/custom-error'
 
-import { JWT, BCRYPT_SALT, URL } from '../config'
-import { where } from "sequelize";
+import { JWT, BCRYPT_SALT } from '../config'
 
-// import { AccountTypes, Roles } from '../types/dymanic'
-// import validator from '../utils/validator'
-// import userService from './user.service'
-// import { ServiceCategories } from '../utils/service-categories'
 
 class AuthService {
     async register(data: SignupInput) {
@@ -45,14 +39,7 @@ class AuthService {
             },
         });
 
-
-        // await MailService.sendTemplate<{}>(
-        //   MailTemplate.welcome,
-        //   'Welcome to Homely',
-        //   { name: user.name, email: user.email },
-        //   {}
-        // )
-        // await this.requestEmailVerification(user.email)
+        await this.requestEmailVerification(user.email)
 
         // Generate Auth tokens
         const authTokens = await this.generateAuthTokens({
@@ -62,7 +49,6 @@ class AuthService {
 
         return { user, token: authTokens }
     }
-
 
     async generateAuthTokens(data: GenerateTokenInput) {
         const { userId, role } = data
@@ -82,14 +68,65 @@ class AuthService {
             { expiresIn: '30d' }
         )
 
-        // await new Token({
-        //     user: userId,
-        //     token: hash,
-        //     type: Tokens.refreshToken,
-        //     expiresAt: Date.now() + ms('30 days'),
-        // }).save()
+        await prisma.token.create({
+            data: {
+                user_Id: userId,
+                type: "REFRESH_TOKEN",
+                token: hash,
+                expire_at: new Date(Date.now() + ms('30 days')),
+
+            },
+        });
 
         return { accessToken, refreshToken: refreshTokenjsonwebtoken }
+    }
+
+    async requestEmailVerification(email: string) {
+        if (!email) throw new CustomError('email is required', 400)
+
+        let user = await prisma.user.findFirst({
+            where: {
+                email
+            }
+        })
+        if (!user) throw new CustomError('user with email not found', 400)
+
+        if (user.email_verified) throw new CustomError('email is already verified', 200)
+
+
+        const oldToken = await prisma.token.findFirst({
+            where: {
+                type: "VERIFY_EMAIL",
+                user_Id: user.id,
+            }
+        })
+        if (oldToken) await prisma.token.delete({ where: { id: oldToken.id } })
+
+        const nanoidOTP = customAlphabet('012345789', 6)
+        const otp = nanoidOTP()
+
+        const hash = await bcrypt.hash(otp, BCRYPT_SALT)
+
+        await prisma.token.create({
+            data: {
+                user_Id: user.id,
+                type:  "VERIFY_EMAIL",
+                token: hash,
+                expire_at: new Date(Date.now() + ms('2h')),
+
+            }
+        })
+
+        await MailService.sendTemplate<{ otp: string | number }>(
+            MailTemplate.emailVerify,
+            'Verify  your email address',
+            { email },
+            { otp }
+        )
+
+        // sends template
+
+        return true
     }
 
 }
