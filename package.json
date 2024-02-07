@@ -2,7 +2,7 @@
   "name": "cloudreport-backend",
   "version": "1.0.0",
   "description": "A Report Of The Cloud",
-  "main": "index.ts",
+  "main": "./src/index.ts",
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/index.js",
