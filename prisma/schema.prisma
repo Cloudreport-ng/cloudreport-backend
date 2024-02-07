@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum School_Role {
+  OWNER
+  STAFF
+}
+
+model User {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  first_name     String?
+  last_name      String?
+  mobile         String?
+  address        String?
+  state          String?
+  country        String?
+  password       String
+  role           Role
+  email          String   @unique
+  email_verified DateTime?
+  created_at     DateTime? @default(now())
+  updated_at     DateTime? @default(now())
+  Staff          Staff?
+}
+
+model School {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  available_slots   Int
+  all_session_slots Int
+  all_time_slots    Int
+  created_at        DateTime? @default(now())
+  updated_at        DateTime? @default(now())
+  staffs            Staff[]
+}
+
+model Staff {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  school_id  String      @db.ObjectId
+  user_Id    String      @unique @db.ObjectId
+  role       School_Role
+  title      String?
+  created_at DateTime?   @default(now())
+  updated_at DateTime?   @default(now())
+
+  user   User   @relation(fields: [user_Id], references: [id])
+  school School @relation(fields: [school_id], references: [id])
+}
