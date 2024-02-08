@@ -20,6 +20,12 @@ router.post('/email-verify/request', authController.emailVerifyRequest)
 
 router.post('/login', authController.login)
 
+router.post(
+  '/finish-onboarding',
+  Auth(ROLE[Roles.user], true),
+  authController.finishOnboarding
+)
+
 // router.get('/me', Auth(ROLE[Roles.user], false), authController.me)
 
 // router.put(

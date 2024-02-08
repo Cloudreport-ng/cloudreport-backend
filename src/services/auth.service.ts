@@ -67,7 +67,7 @@ class AuthService {
 
         const isValid = await bcrypt.compare(data.password, user.password)
 
-        if(!isValid) throw new CustomError('invalid email or password', 400)
+        if (!isValid) throw new CustomError('invalid email or password', 400)
 
         // Generate Auth tokens
         const authTokens = await this.generateAuthTokens({
@@ -203,6 +203,64 @@ class AuthService {
         await prisma.token.delete({ where: { id: user.Tokens[0].id } })
 
         return true
+    }
+
+    async finishOnboarding(data: SetupInput) {
+        if (!data.firstName) throw new CustomError('first name is required', 400)
+        if (!data.lastName) throw new CustomError('last name is required', 400)
+        if (!data.schoolName) throw new CustomError('school name is required', 400)
+        if (!data.schoolAddress) throw new CustomError('school address is required', 400)
+
+        await prisma.user.update({
+            where: {
+                id: data.userId
+            },
+            data: {
+                first_name: data.firstName,
+                last_name: data.lastName,
+                updated_at: new Date(Date.now())
+            }
+        })
+
+        const school = await prisma.school.create({
+            data: {
+                name: data.schoolName,
+                address: data.schoolAddress
+            }
+        })
+
+        const staff = await prisma.staff.create({
+            data: {
+                user_Id: data.userId,
+                school_id: school.id,
+                role: "OWNER",
+                title: "OWNER"
+            }
+        })
+
+        const full = await prisma.user.findFirst({
+            where: {
+                id: data.userId
+            },
+            select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                email: true,
+                Staff: {
+                    where: {
+                        role: "OWNER"
+                    },
+                    select: {
+                        role: true,
+                        title: true,
+                        school: true
+                    }
+                }
+            }
+        })
+
+        return full
     }
 
 }

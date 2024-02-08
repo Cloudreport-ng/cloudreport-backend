@@ -51,6 +51,14 @@ class AuthController {
     res.status(201).send(response('login succeful', result))
   }
 
+  async finishOnboarding(req: Request, res: Response) {
+    const result = await AuthService.finishOnboarding({
+      userId: req.user.id,
+      ...req.body,
+    })
+    res.status(201).send(response('welcome onboard', result))
+  }
+
 }
 
 export default new AuthController()

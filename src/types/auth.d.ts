@@ -8,6 +8,14 @@ interface LoginInput {
     password: string
 }
 
+interface SetupInput {
+    userId: string
+    firstName: string
+    lastName: string
+    schoolName: string
+    schoolAddress: string
+}
+
 
 
 interface GenerateTokenInput {

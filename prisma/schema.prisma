@@ -58,9 +58,10 @@ model Token {
 model School {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
   name              String
-  available_slots   Int
-  all_session_slots Int
-  all_time_slots    Int
+  address           String
+  available_slots   Int       @default(0)
+  all_session_slots Int       @default(0)
+  all_time_slots    Int       @default(0)
   created_at        DateTime? @default(now())
   updated_at        DateTime? @default(now())
   staffs            Staff[]
