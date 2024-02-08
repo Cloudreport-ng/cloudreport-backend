@@ -1,13 +1,11 @@
 import * as dotenv from 'dotenv'
-// import { Roles } from '../types/dymanic'
+import { Roles } from '../types/dynamic'
 dotenv.config()
 
-// export const ROLE = {
-//   [Roles.admin]: ['admin'],
-//   [Roles.recruiter]: ['recruiter', 'admin'],
-//   [Roles.serviceProvider]: ['service provider', 'admin'],
-//   [Roles.user]: ['user', 'recruiter', 'service provider', 'admin'],
-// }
+export const ROLE = {
+  [Roles.admin]: ['ADMIN'],
+  [Roles.user]: ['USER',],
+}
 
 export const NODE_ENV = process.env.NODE_ENV || 'development'
 

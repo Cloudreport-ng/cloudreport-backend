@@ -26,6 +26,8 @@ class MailService {
   ) {
     let argsData = args ? args : {}
 
+    console.log("entered func")
+
     // Retrieve Markup
     let templateMarkup: string = fs.readFileSync(
       path.join(__dirname, `../templates/${templates[template]}`),
@@ -40,7 +42,7 @@ class MailService {
       const regex = new RegExp(`{{${key}}}`, 'g')
       templateMarkup = templateMarkup.replace(regex, value)
     })
-
+    console.log("replaced succeful")
     const mailOptions = {
       from: EMAIL_USER,
       to: user.email,
@@ -49,6 +51,7 @@ class MailService {
     }
 
     try {
+      console.log("trying to send")
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
@@ -59,6 +62,7 @@ class MailService {
         },
       })
       await transporter.sendMail(mailOptions)
+      console.log("replaced sent succefull")
     } catch (err) {
       console.log(err)
     }

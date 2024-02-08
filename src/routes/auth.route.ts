@@ -1,24 +1,24 @@
 import { Router } from 'express'
-// import Auth from '../middlewares/auth.middleware'
-// import { ROLE } from '../config'
+import Auth from '../middlewares/auth.middleware'
+import { ROLE } from '../config'
 
 import authController from '../controllers/auth.controller'
+import { Roles } from '../types/dynamic'
 
-// import { Roles } from '../types/dymanic'
 
 const router = Router()
 
 router.post('/signup', authController.register)
 
-// router.post(
-//   '/email-verify',
-//   Auth(ROLE[Roles.user], false),
-//   authController.emailVerify
-// )
+router.post(
+  '/email-verify',
+  Auth(ROLE[Roles.user], false),
+  authController.emailVerify
+)
 
-// router.post('/email-verify/request', authController.emailVerifyRequest)
+router.post('/email-verify/request', authController.emailVerifyRequest)
 
-// router.post('/login', authController.login)
+router.post('/login', authController.login)
 
 // router.get('/me', Auth(ROLE[Roles.user], false), authController.me)
 

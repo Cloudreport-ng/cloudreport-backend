@@ -33,7 +33,7 @@ model User {
   address        String?
   state          String?
   country        String?
-  password       String
+  password       String?
   role           ROLE
   email          String   @unique
   email_verified DateTime?
