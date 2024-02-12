@@ -286,13 +286,12 @@ class AuthService {
     }
 
     async refreshAccessToken(data: RefreshTokenInput) {
-        console.log("ABCD")        
-        const { refreshToken: refreshTokenjsonwebtoken } = data
-
+        if (!data.refreshToken) throw new CustomError('refresh token is required', 400)
         const decoded: any = jsonwebtoken.verify(
-            refreshTokenjsonwebtoken,
+            data.refreshToken,
             JWT.REFRESH_SECRET
         )
+
         const { userId, refreshToken } = decoded
 
         const user = await prisma.user.findFirst({
@@ -300,7 +299,6 @@ class AuthService {
                 id: userId
             }
         })
-        console.log('user')
         if (!user) throw new CustomError('User does not exist', 400)
 
         const RTokens = await prisma.token.findMany({
@@ -309,13 +307,12 @@ class AuthService {
                 type: TOKEN_TYPE.REFRESH_TOKEN
             }
         })
-        console.log(RTokens.length)
+
         if (RTokens.length < 1) throw new CustomError('invalid or expired refresh token', 400)
 
         let tokenExists:boolean = false
 
         for (const token of RTokens) {
-            console.log("first itteration")
             const isValid = await bcrypt.compare(refreshToken, token.token)
 
             if (isValid) {
@@ -331,9 +328,6 @@ class AuthService {
             JWT.JWT_SECRET,
             { expiresIn: '1h' }
         )
-        console.log("returning")
-        console.log(accessToken)
-
         return accessToken
     }
 
