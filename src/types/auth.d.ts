@@ -33,4 +33,9 @@ interface JWTPayload {
     iat: number
     exp: number
     role: 'ADMIN' | 'USER'
-  }
+}
+
+
+interface RefreshTokenInput {
+    refreshToken: string
+}

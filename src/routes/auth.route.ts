@@ -39,7 +39,7 @@ router.post(
 
 // router.post('/password/reset/request', authController.requestPssswordReset)
 
-// router.post('/refresh', authController.refreshAuth)
+router.post('/refresh', authController.refreshAuth)
 
 
 

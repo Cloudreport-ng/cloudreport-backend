@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, TOKEN_TYPE } from "@prisma/client";
 
 const prisma = new PrismaClient();
 import jsonwebtoken from 'jsonwebtoken'
@@ -211,6 +211,28 @@ class AuthService {
         if (!data.schoolName) throw new CustomError('school name is required', 400)
         if (!data.schoolAddress) throw new CustomError('school address is required', 400)
 
+
+        const checker = await prisma.user.findFirst({
+            where: {
+                id: data.userId
+            },
+            select: {
+                Staff: {
+                    where: {
+                        role: "OWNER"
+                    },
+                    select: {
+                        role: true,
+                        title: true,
+                        school: true
+                    }
+                }
+            }
+        })
+
+
+        if (checker?.Staff && checker?.Staff.length > 0) throw new CustomError('Youre Already onboard', 400)
+
         await prisma.user.update({
             where: {
                 id: data.userId
@@ -262,6 +284,51 @@ class AuthService {
 
         return full
     }
+
+    async refreshAccessToken(data: RefreshTokenInput) {
+        const { refreshToken: refreshTokenjsonwebtoken } = data
+
+        const decoded: any = jsonwebtoken.verify(
+            refreshTokenjsonwebtoken,
+            JWT.REFRESH_SECRET
+        )
+        const { userId, refreshToken } = decoded
+
+        const user = await prisma.user.findFirst({
+            where: {
+                id: userId
+            }
+        })
+        if (!user) throw new CustomError('User does not exist', 400)
+
+        const RTokens = await prisma.token.findMany({where:{
+            user: userId,
+            type: TOKEN_TYPE.REFRESH_TOKEN,
+        }})
+        if (RTokens.length === 0) throw new CustomError('invalid or expired refresh token', 400)
+
+        let tokenExists = false
+
+        for (const token of RTokens) {
+            const isValid = await bcrypt.compare(refreshToken, token.token)
+
+            if (isValid) {
+                tokenExists = true
+                break
+            }
+        }
+
+        if (!tokenExists) throw new CustomError('invalid or expired refresh token', 400)
+
+        const accessToken = jsonwebtoken.sign(
+            { id: user.id, role: user.role },
+            JWT.JWT_SECRET,
+            { expiresIn: '1h' }
+        )
+
+        return accessToken
+    }
+
 
 }
 
