@@ -6,6 +6,7 @@ import { EMAIL_USER, EMAIL_PASSWORD } from '../config'
 export enum MailTemplate {
   emailVerify = 'Email Verify Requested',
   passwordResetRequested = 'Password Reset Requested',
+  staffInvitation = 'You have been Invited To CloudReport',
   passwordUpdated = 'Password Updated',
   welcome = 'welcome'
 }
@@ -13,6 +14,7 @@ export enum MailTemplate {
 const templates = {
   [MailTemplate.emailVerify]: 'email-verify.html',
   [MailTemplate.welcome]: 'welcome.html',
+  [MailTemplate.staffInvitation]: 'invitation.html',
   [MailTemplate.passwordResetRequested]: 'reset-password-request.html',
   [MailTemplate.passwordUpdated]: 'password-updated.html',
 }
