@@ -27,7 +27,7 @@ class AuthController {
 
   async emailVerifyRequest(req: Request, res: Response) {
     await AuthService.requestEmailVerification(req.body.email)
-    res.status(201).send(response(`email sent to ${req.body.email}`, null ))
+    res.status(201).send(response(`email sent to ${req.body.email}`, null))
   }
 
   async emailVerify(req: Request, res: Response) {
@@ -62,6 +62,24 @@ class AuthController {
   async refreshAuth(req: Request, res: Response) {
     const result = await AuthService.refreshAccessToken(req.body)
     res.status(200).send(response('Authorization refresh', result))
+  }
+
+  async requestPasswordChange(req: Request, res: Response) {
+    const result = await AuthService.requestPasswordChange({
+      userId: req.user.id,
+      userEmail: req.user.email,
+      userPassword: req.user.password,
+      ...req.body
+    })
+    res.status(200).send(response(`OTP sent to ${req.user.email}`, result))
+  }
+
+  async changePassword(req: Request, res: Response) {
+    const result = await AuthService.changePassword({
+      userId: req.user.id,
+      ...req.body
+    })
+    res.status(200).send(response(`Password Changed`, result))
   }
 
 }

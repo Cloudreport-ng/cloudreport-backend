@@ -26,6 +26,8 @@ router.post(
   authController.finishOnboarding
 )
 
+router.post('/refresh', authController.refreshAuth)
+
 // router.get('/me', Auth(ROLE[Roles.user], false), authController.me)
 
 // router.put(
@@ -37,9 +39,19 @@ router.post(
 
 // router.post('/password/reset', authController.resetPassword)
 
-// router.post('/password/reset/request', authController.requestPssswordReset)
+router.post('/password/change/request',
+  Auth(ROLE[Roles.user], true),
+  authController.requestPasswordChange)
 
-router.post('/refresh', authController.refreshAuth)
+router.post('/password/change',
+  Auth(ROLE[Roles.user], true),
+  authController.changePassword)
+
+// router.post('/password/reset', authController.resetPassword)
+
+// router.post('/password/reset/request', authController.requestPasswordReset)
+
+
 
 
 

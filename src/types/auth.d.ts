@@ -16,6 +16,31 @@ interface SetupInput {
     schoolAddress: string
 }
 
+interface MeInput {
+    userId: string
+}
+
+interface MeUpdateInput {
+    userId: string,
+    firstName?: string,
+    lastName?: string,
+    mobile?: string,
+    address?: string,
+    state?: string,
+}
+
+interface PasswordChangeReqInput {
+    userId: string,
+    userEmail: string,
+    userPassword: string,
+    currentPassword: string
+}
+
+interface PasswordChangeInput {
+    userId: string,
+    otp: string,
+    newPassword: string
+}
 
 
 interface GenerateTokenInput {

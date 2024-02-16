@@ -12,7 +12,6 @@ import MailService, { MailTemplate } from './mail.service'
 
 import CustomError from '../utils/custom-error'
 
-import { JWT, BCRYPT_SALT } from '../config'
 
 
 class SchoolService {

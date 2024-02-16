@@ -331,6 +331,97 @@ class AuthService {
         return accessToken
     }
 
+    async requestPasswordChange(data: PasswordChangeReqInput) {
+        if (!data.userEmail) throw new CustomError('email is required', 400)
+        if (!data.userId) throw new CustomError('ID Error', 400)
+        if (!data.userPassword) throw new CustomError('PASS Error', 400)
+        if(!data.currentPassword) throw new CustomError('currentPassword is required', 400)
+
+
+        const isValid = await bcrypt.compare(data.currentPassword, data.userPassword)
+
+        if (!isValid) throw new CustomError('invalid current password', 400)
+
+
+        const oldToken = await prisma.token.findFirst({
+            where: {
+                type: "CHANGE_PASSWORD",
+                user_Id: data.userId,
+            }
+        })
+        if (oldToken) await prisma.token.delete({ where: { id: oldToken.id } })
+
+        const nanoidOTP = customAlphabet('012345789', 6)
+        const otp = nanoidOTP()
+
+        const hash = await bcrypt.hash(otp, BCRYPT_SALT)
+
+        await prisma.token.create({
+            data: {
+                user_Id: data.userId,
+                type: "CHANGE_PASSWORD",
+                token: hash,
+                expire_at: new Date(Date.now() + ms('30m')),
+
+            }
+        })
+
+        await MailService.sendTemplate<{ otp: string | number }>(
+            MailTemplate.changePassword,
+            'Change Your Password',
+            { email: data.userEmail },
+            { otp }
+        )
+
+        // sends template
+
+        return true
+    }
+
+    async changePassword(data: PasswordChangeInput) {
+        if (!data.userId) throw new CustomError('ID Error', 400)
+        if (!data.otp) throw new CustomError('otp required Error', 400)
+        if(!data.newPassword) throw new CustomError('newPassword is required', 400)
+
+        const oldToken = await prisma.token.findFirst({
+            where: {
+                type: "CHANGE_PASSWORD",
+                user_Id: data.userId,
+            }
+        })
+        if (!oldToken) throw new CustomError('invalid Otp', 400)
+
+
+        const isValid = await bcrypt.compare(data.otp, oldToken.token)
+
+        if (!isValid) throw new CustomError('invalid otp', 400)
+
+        await prisma.token.delete({ where: { id: oldToken.id } })
+
+        const hash = await bcrypt.hash(data.newPassword, BCRYPT_SALT);
+
+
+        await prisma.user.update({
+            where: {
+                id: data.userId
+            },
+            data: {
+                password: hash,
+            }
+        })
+
+        // await MailService.sendTemplate<{ otp: string | number }>(
+        //     MailTemplate.changePassword,
+        //     'Change Your Password',
+        //     { email: data.userEmail },
+        //     { otp }
+        // )
+
+        // sends template
+
+        return true
+    }
+
 
 }
 
