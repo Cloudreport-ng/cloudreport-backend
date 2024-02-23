@@ -88,17 +88,42 @@ class SchoolService {
                     //.......
 
                     //send notification
-                    await MailService.sendTemplate<{ link: string, school:string }>(
+                    await MailService.sendTemplate<{ link: string, school: string }>(
                         MailTemplate.staffInvitation,
                         'You have been invited to cloudreport',
                         { email: email },
-                        { link:"www.google.com",school:staff.school.name }
+                        { link: "www.google.com", school: staff.school.name }
                     )
                 }
             }
         }
         if (!found) throw new CustomError('school not found', 404)
 
+        return true
+    }
+
+    async createClass(data: CreateClassInput) {
+        if (!data.name || data.name == "") throw new CustomError('name cannot empty', 400)
+        if (!data.colourCode) throw new CustomError('colour code is required', 400)
+
+        const src = await prisma.class.findFirst({
+            where: {
+                name: data.name,
+                school_id: data.schoolId
+            },
+        })
+
+        if (src) throw new CustomError('class already exist', 404)
+
+        const newClass = await prisma.class.create({
+            data: {
+                name: data.name,
+                school_id: data.schoolId,
+                colour_code: data.colourCode,
+
+            }
+        })
+        
         return true
     }
 

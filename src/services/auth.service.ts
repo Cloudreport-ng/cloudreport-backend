@@ -12,7 +12,7 @@ import MailService, { MailTemplate } from './mail.service'
 
 import CustomError from '../utils/custom-error'
 
-import { JWT, BCRYPT_SALT } from '../config'
+import { JWT, BCRYPT_SALT, URL } from '../config'
 
 
 class AuthService {
@@ -310,7 +310,7 @@ class AuthService {
 
         if (RTokens.length < 1) throw new CustomError('invalid or expired refresh token', 400)
 
-        let tokenExists:boolean = false
+        let tokenExists: boolean = false
 
         for (const token of RTokens) {
             const isValid = await bcrypt.compare(refreshToken, token.token)
@@ -335,7 +335,7 @@ class AuthService {
         if (!data.userEmail) throw new CustomError('email is required', 400)
         if (!data.userId) throw new CustomError('ID Error', 400)
         if (!data.userPassword) throw new CustomError('PASS Error', 400)
-        if(!data.currentPassword) throw new CustomError('currentPassword is required', 400)
+        if (!data.currentPassword) throw new CustomError('currentPassword is required', 400)
 
 
         const isValid = await bcrypt.compare(data.currentPassword, data.userPassword)
@@ -345,7 +345,7 @@ class AuthService {
 
         const oldToken = await prisma.token.findFirst({
             where: {
-                type: "CHANGE_PASSWORD",
+                type: TOKEN_TYPE.CHANGE_PASSWORD,
                 user_Id: data.userId,
             }
         })
@@ -359,7 +359,7 @@ class AuthService {
         await prisma.token.create({
             data: {
                 user_Id: data.userId,
-                type: "CHANGE_PASSWORD",
+                type: TOKEN_TYPE.CHANGE_PASSWORD,
                 token: hash,
                 expire_at: new Date(Date.now() + ms('30m')),
 
@@ -381,7 +381,7 @@ class AuthService {
     async changePassword(data: PasswordChangeInput) {
         if (!data.userId) throw new CustomError('ID Error', 400)
         if (!data.otp) throw new CustomError('otp required Error', 400)
-        if(!data.newPassword) throw new CustomError('newPassword is required', 400)
+        if (!data.newPassword) throw new CustomError('newPassword is required', 400)
 
         const oldToken = await prisma.token.findFirst({
             where: {
@@ -418,6 +418,54 @@ class AuthService {
         // )
 
         // sends template
+
+        return true
+    }
+
+    async requestPasswordReset(email: string) {
+        if (!email) throw new CustomError('email is required', 400)
+
+        // if (!validator.isEmail(email)) throw new CustomError('Invalid email address', 400)
+
+        const user = await prisma.user.findFirst({
+            where: {
+                email
+            }
+        })
+        if (!user) throw new CustomError('email does not exist', 404)
+
+        let token = await prisma.token.findFirst({
+            where: {
+                user_Id: user.id,
+                type: TOKEN_TYPE.RESET_PASSWORD,
+            }
+        })
+        if (token) await prisma.token.delete({
+            where:{
+                id:token.id
+            }
+        })
+
+        const resetToken = crypto.randomBytes(32).toString('hex')
+        const hash = await bcrypt.hash(resetToken, BCRYPT_SALT)
+
+        token = await prisma.token.create({
+            data:{
+                token: hash,
+                user_Id: user.id,
+                type: TOKEN_TYPE.RESET_PASSWORD,
+                expire_at: new Date(Date.now() + ms('1h')),
+            }
+        })
+
+        const link = `${URL.CLIENT_URL}/reset-password/confirm?uid=${token.id}&resetToken=${resetToken}`
+        if(!user.first_name) user.first_name = "Friend"
+        await MailService.sendTemplate<{ link: string }>(
+            MailTemplate.passwordResetRequested,
+            'Reset your password',
+            { name: user.first_name, email: user.email },
+            { link }
+        )
 
         return true
     }

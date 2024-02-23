@@ -3,3 +3,8 @@ export enum Roles {
   user = 'USER',
 }
 
+export enum SchoolRoles {
+  owner = 'OWNER',
+  staff = 'STAFF',
+}
+

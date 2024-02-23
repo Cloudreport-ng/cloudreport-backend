@@ -82,6 +82,13 @@ class AuthController {
     res.status(200).send(response(`Password Changed`, result))
   }
 
+  async requestPasswordReset(req: Request, res: Response) {
+    const result = await AuthService.requestPasswordReset(
+      req.query.email as string
+    )
+    res.status(200).send(response('email instructions sent successfully', result))
+  }
+
 }
 
 export default new AuthController()

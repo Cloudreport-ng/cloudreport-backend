@@ -1,10 +1,15 @@
 import * as dotenv from 'dotenv'
-import { Roles } from '../types/dynamic'
+import { Roles, SchoolRoles } from '../types/dynamic'
 dotenv.config()
 
 export const ROLE = {
   [Roles.admin]: ['ADMIN'],
   [Roles.user]: ['USER',],
+}
+
+export const SCHOOL_ROLE = {
+  [SchoolRoles.owner]: ['OWNER'],
+  [SchoolRoles.staff]: ['STAFF','OWNER'],
 }
 
 export const NODE_ENV = process.env.NODE_ENV || 'development'

@@ -3,3 +3,9 @@ interface InviteInput {
     schoolId: string,
     emails: string[]
 }
+
+interface CreateClassInput {
+    schoolId: string,
+    name: string,
+    colourCode: number?
+}

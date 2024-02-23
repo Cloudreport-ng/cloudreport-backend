@@ -23,6 +23,7 @@ enum SCHOOL_ROLE {
 enum TOKEN_TYPE {
   REFRESH_TOKEN
   CHANGE_PASSWORD
+  RESET_PASSWORD
   VERIFY_EMAIL
 }
 
@@ -36,7 +37,7 @@ model User {
   country        String?
   password       String?
   role           ROLE
-  email          String   @unique
+  email          String    @unique
   email_verified DateTime?
   created_at     DateTime? @default(now())
   updated_at     DateTime? @default(now())
@@ -44,28 +45,40 @@ model User {
   Tokens         Token[]
 }
 
-
 model Token {
-  id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  user_Id    String      @db.ObjectId
+  id         String     @id @default(auto()) @map("_id") @db.ObjectId
+  user_Id    String     @db.ObjectId
   type       TOKEN_TYPE
   token      String
-  created_at DateTime?   @default(now())
-  expire_at  DateTime   
+  created_at DateTime?  @default(now())
+  expire_at  DateTime
 
-  user   User   @relation(fields: [user_Id], references: [id])
+  user User @relation(fields: [user_Id], references: [id])
 }
 
 model School {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
   name              String
   address           String
+  current_session   String    @db.ObjectId
   available_slots   Int       @default(0)
   all_session_slots Int       @default(0)
   all_time_slots    Int       @default(0)
   created_at        DateTime? @default(now())
   updated_at        DateTime? @default(now())
   staffs            Staff[]
+  classes           Class[]
+  sessions          Session[]
+}
+
+model Class {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  colour_code Int?
+  school_id   String    @db.ObjectId
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @default(now())
+  school      School    @relation(fields: [school_id], references: [id])
 }
 
 model Staff {
@@ -79,4 +92,14 @@ model Staff {
 
   user   User   @relation(fields: [user_Id], references: [id])
   school School @relation(fields: [school_id], references: [id])
+}
+
+model Session {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  students   Int
+  school_id  String    @db.ObjectId
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+  school     School    @relation(fields: [school_id], references: [id])
 }

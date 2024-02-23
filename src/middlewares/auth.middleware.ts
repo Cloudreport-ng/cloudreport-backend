@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 import jsonwebtoken from 'jsonwebtoken'
-import { ROLE, JWT } from './../config'
+import { ROLE, SCHOOL_ROLE, JWT } from './../config'
 import CustomError from './../utils/custom-error'
 
 import type { Request, Response, NextFunction } from 'express'
@@ -12,7 +12,16 @@ import type { Request, Response, NextFunction } from 'express'
  * @param  {any[]} roles List of roles allowed to access the route
  */
 
-const auth = (roles: string[] = [], requiresVerifiedEmail = true) => {
+
+// Regular expression to match MongoDB ObjectId format
+const objectIdPattern = /^[0-9a-fA-F]{24}$/;
+
+// Function to check if a string is a valid MongoDB ObjectId
+function isValidObjectId(id: string): boolean {
+    return objectIdPattern.test(id);
+}
+
+export const auth = (roles: string[] = [], requiresVerifiedEmail = true) => {
     roles = roles.length > 0 ? roles : ROLE.USER
     return async (req: Request, res: Response, next: NextFunction) => {
         const token = req.headers.authorization
@@ -57,8 +66,8 @@ const auth = (roles: string[] = [], requiresVerifiedEmail = true) => {
         }
 
         const user = await prisma.user.findUnique({
-            where: { 
-                id: decoded.id 
+            where: {
+                id: decoded.id
             },
         })
 
@@ -74,6 +83,45 @@ const auth = (roles: string[] = [], requiresVerifiedEmail = true) => {
             throw new CustomError('unauthorized access', 401)
 
         req.user = user
+        next()
+    }
+}
+
+export const schoolAuth = (schoolRoles: string[] = []) => {
+
+    schoolRoles = schoolRoles.length > 0 ? schoolRoles : SCHOOL_ROLE.STAFF
+    return async (req: Request, res: Response, next: NextFunction) => {
+        const user = req.user
+
+        if (!user) throw new CustomError('unauthorized access: User does not exist', 401)
+
+        const schoolId = req.header("xSchoolIdentifier")
+            ? String(req.header('xSchoolIdentifier'))
+            : ''
+
+
+        if (!isValidObjectId(schoolId)) throw new CustomError('invalid xSchoolIdentifier', 401)
+
+
+        if (!schoolId || schoolId === '') throw new CustomError('xSchoolIdentifier header not found', 401)
+
+
+        const staff = await prisma.staff.findFirst({
+            where: {
+                school_id: schoolId,
+                user_Id: user.id
+            },
+            select: {
+                role: true,
+                school: true
+            }
+        })
+        console.log(staff)
+        if (!staff) throw new CustomError('invalid xSchoolIdentifier', 401)
+
+        if (!schoolRoles.includes(staff.role)) throw new CustomError('unauthorized access', 401)
+
+        req.school = staff.school
         next()
     }
 }
