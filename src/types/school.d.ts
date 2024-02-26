@@ -1,5 +1,4 @@
 interface InviteInput {
-    userId: string,
     schoolId: string,
     emails: string[]
 }
@@ -35,4 +34,10 @@ interface EditClassInput {
     classId: string,
     name: string?,
     colourCode: number?
+}
+
+interface EditSchoolInput {
+    schoolId: string,
+    name: string?,
+    address: string?
 }

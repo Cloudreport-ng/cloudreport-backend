@@ -45,6 +45,16 @@ model User {
   Tokens         Token[]
 }
 
+model Invite{
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  school_id  String      @db.ObjectId
+  email      String
+  token      String     
+  role       SCHOOL_ROLE
+  invited_at DateTime?   @default(now())
+  school School @relation(fields: [school_id], references: [id])
+}
+
 model Token {
   id         String     @id @default(auto()) @map("_id") @db.ObjectId
   user_Id    String     @db.ObjectId
@@ -67,6 +77,7 @@ model School {
   created_at        DateTime? @default(now())
   updated_at        DateTime? @default(now())
   staffs            Staff[]
+  invites           Invite[]
   classes           Class[]
   sessions          Session[]
 }

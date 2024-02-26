@@ -15,8 +15,8 @@ class SchoolController {
 
 
   async editSchool(req: Request, res: Response) {
-    // const result = await SchoolService.editSchool(req.body)
-    // res.status(201).send(response('Edited', result))
+    const result = await SchoolService.editSchool({schoolId: req.school.id, ...req.body})
+    res.status(201).send(response('Edited', result))
   }
 
 
@@ -25,7 +25,7 @@ class SchoolController {
     res.status(201).send(response('created', result))
   }
   async editClass(req: Request, res: Response) {
-    const result = await SchoolService.editClass(req.body)
+    const result = await SchoolService.editClass({schoolId: req.school.id, ...req.body})
     res.status(201).send(response('Edited', result))
   }
 
@@ -35,14 +35,14 @@ class SchoolController {
     res.status(201).send(response('created', result))
   }
   async editSession(req: Request, res: Response) {
-    const result = await SchoolService.editSession(req.body)
+    const result = await SchoolService.editSession({schoolId: req.school.id, ...req.body})
     res.status(201).send(response('Edited', result))
   }
 
 
   async changeCurrentSession(req: Request, res: Response) {
     const result = await SchoolService.changeCurrentSession({schoolId: req.school.id, ...req.body})
-    res.status(201).send(response('created', result))
+    res.status(201).send(response('changed', result))
   }
 
 }

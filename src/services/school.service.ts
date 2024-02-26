@@ -9,8 +9,12 @@ import { customAlphabet } from 'nanoid'
 
 import MailService, { MailTemplate } from './mail.service'
 
+import {  URL } from '../config'
+
 
 import CustomError from '../utils/custom-error'
+import { SchoolRoles } from "../types/dynamic";
+import { INTEGER } from "sequelize";
 
 // Regular expression to match MongoDB ObjectId format
 const objectIdPattern = /^[0-9a-fA-F]{24}$/;
@@ -22,90 +26,79 @@ function isValidObjectId(id: string): boolean {
 
 
 class SchoolService {
-    async inviteStaff(data: InviteInput) {
-        if (data.emails.length < 1) throw new CustomError('email list empty', 400)
-        if (!data.schoolId) throw new CustomError('schoolId is required', 400)
+    async editSchool(data: EditSchoolInput) {
 
-        const src = await prisma.user.findFirst({
+        let raw: any = {}
+
+        if (data.name && data.name !== "") raw.name = data.name
+        if (data.address && data.address !== "") raw.address = data.address
+
+        await prisma.school.update({
             where: {
-                id: data.userId
+                id: data.schoolId
             },
-            select: {
-                first_name: true,
-                Staff: {
-                    where: {
-                        role: "OWNER"
-                    },
-                    select: {
-                        id: true,
-                        role: true,
-                        title: true,
-                        school: true
-                    }
-                }
+            data: {
+                updated_at: new Date(Date.now()),
+                ...raw
             }
         })
-        if (!src?.Staff) throw new CustomError('school not found', 404)
-        let found: boolean = false
-        for (const staff of src?.Staff) {
-            if (staff.school.id === data.schoolId) {
-                found = true
+        return true
+    }
 
-                let staffs = await prisma.staff.findMany({
-                    where: {
-                        school_id: data.schoolId
-                    }
-                })
+    async inviteStaff(data: InviteInput) {
+        // check if email list is empty,
+        if (data.emails.length < 1) throw new CustomError('email list empty', 400)
 
-                if (staffs.length >= 3) throw new CustomError('max number of staffs reached', 400)
-
-                if ((staffs.length + data.emails.length) > 3) throw new CustomError('you can only have 3 users in your school', 400)
-
-                for (const email of data.emails) {
-                    const oldUser = await prisma.user.findFirst({
-                        where:
-                        {
-                            email
-                        }
-                    })
-                    let state = ""
-
-                    if (!oldUser) {
-                        let newUser = await prisma.user.create({
-                            data: {
-                                email: email,
-                                role: "USER"
-                            }
-                        })
-                        state = newUser.id
-                    } else {
-                        state = oldUser.id
-                    }
-
-                    let newStaff = await prisma.staff.create({
-                        data: {
-                            school_id: data.schoolId,
-                            user_Id: state,
-                            role: "STAFF",
-                            title: "Exam Officer"
-                        }
-                    })
-
-                    //generateSetupLink
-                    //.......
-
-                    //send notification
-                    await MailService.sendTemplate<{ link: string, school: string }>(
-                        MailTemplate.staffInvitation,
-                        'You have been invited to cloudreport',
-                        { email: email },
-                        { link: "www.google.com", school: staff.school.name }
-                    )
-                }
+        // get d number of staffs in the school
+        let school = await prisma.school.findFirst({
+            where: {
+                id: data.schoolId
+            },
+            select: {
+                name: true,
+                staffs: true,
+                invites: true
             }
-        }
-        if (!found) throw new CustomError('school not found', 404)
+        })
+        if (!school) throw new CustomError('something went wrong', 400)
 
+        // check if the length if the to  number of staves plus the intended addition plus existing invites exceeds the limit of the platform per school
+        if ((school.staffs.length + school.invites.length + data.emails.length) > 3) throw new CustomError('max number of staffs exceeded', 400)
+
+        // if not, for each of the emails on the list, 
+        for (const email of data.emails) {
+            //check if the user is alrady on the platform,
+            const oldUser = await prisma.user.findFirst({
+                where: { email }
+            })
+            if (oldUser) throw new CustomError('email address belongs to another account on the platform', 400)
+
+        }
+
+        // if not, for each of the emails on the list, 
+        for (const email of data.emails) {
+            ///create unique string for the ijnvitation
+            const inviteToken = crypto.randomBytes(32).toString('hex')
+
+            /// create the invite object for the email, and 
+            await prisma.invite.create({
+                data: {
+                    school_id: data.schoolId,
+                    email: email,
+                    token: inviteToken,
+                    role: SchoolRoles.staff
+                }
+            })
+
+            //send the user an email notification with the sign up link
+            MailService.sendTemplate<{ link: string, school: string }>(
+                MailTemplate.staffInvitation,
+                'You have been invited to cloudreport',
+                { email: email },
+                { link: `${URL.CLIENT_URL}/invitation/0283/${inviteToken}`, school: school.name }
+            )
+
+        }
         return true
     }
 
@@ -136,7 +129,7 @@ class SchoolService {
 
     async createSession(data: CreateSessionInput) {
         if (!data.name || data.name == "") throw new CustomError('name cannot empty', 400)
-        if (!data.students && data.students != 0) throw new CustomError('number of students must be specified', 400)
+        if ((!data.students && data.students != 0) || typeof(data.students) !== "number") throw new CustomError('number of students must be specified', 400)
 
         const src = await prisma.session.findFirst({
             where: {
@@ -145,7 +138,7 @@ class SchoolService {
             },
         })
 
-        if (src) throw new CustomError('class already exist', 404)
+        if (src) throw new CustomError('session already exist', 404)
 
         const src2 = await prisma.session.findFirst({
             where: {
@@ -253,7 +246,7 @@ class SchoolService {
         let raw: any = {}
         if (data.name && data.name !== "") raw.name = data.name
         if (data.colourCode && data.colourCode !== 0) raw.colour_code = data.colourCode
-    
+
         await prisma.class.update({
             where: {
                 id: data.classId

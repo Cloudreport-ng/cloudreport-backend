@@ -12,7 +12,7 @@ router.put('/edit-school',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[S
 router.post('/invite-staff',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.inviteStaff)
 router.post('/create-class',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.createClass)
 router.post('/create-session',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.createSession)
-router.post('/change-current-session',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.changeCurrentSession)
+router.put('/change-current-session',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.changeCurrentSession)
 router.put('/edit-class',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.editClass)
 router.put('/edit-session',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.editSession)
 
