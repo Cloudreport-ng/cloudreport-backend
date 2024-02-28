@@ -8,6 +8,11 @@ interface DeleteInviteInput {
     inviteId: string
 }
 
+interface DeleteStaffInput {
+    schoolId: string,
+    staffId: string
+}
+
 interface CreateClassInput {
     schoolId: string,
     name: string,

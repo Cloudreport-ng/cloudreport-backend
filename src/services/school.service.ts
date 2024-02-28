@@ -108,7 +108,8 @@ class SchoolService {
 
         const invite = await prisma.invite.findFirst({
             where:{
-                id:data.inviteId
+                id:data.inviteId,
+                school_id:data.schoolId
             }
         })
         if(!invite) throw new CustomError('invite not found', 404)
@@ -116,6 +117,28 @@ class SchoolService {
         await prisma.invite.delete({
             where:{
                 id:invite.id
+            }
+        })
+
+        return true
+    }
+
+    async deleteStaff(data: DeleteStaffInput) {
+        if(!data.staffId) throw new CustomError('staffId cannot empty', 400)
+        if (!isValidObjectId(data.staffId)) throw new CustomError('invalid staffId', 401)
+
+        const staff = await prisma.staff.findFirst({
+            where:{
+                id:data.staffId,
+                school_id:data.schoolId,
+                role: SchoolRoles.staff
+            }
+        })
+        if(!staff) throw new CustomError('staff not found', 404)
+
+        await prisma.staff.delete({
+            where:{
+                id:staff.id
             }
         })
 

@@ -19,6 +19,12 @@ class SchoolController {
     res.status(201).send(response('invitation deleted', result))
   }
 
+  async deleteStaff(req: Request, res: Response) {
+    const schoolId = req.school.id
+    const result = await SchoolService.deleteStaff({schoolId, ...req.body})
+    res.status(201).send(response('staff removed', result))
+  }
+
 
   async editSchool(req: Request, res: Response) {
     const result = await SchoolService.editSchool({schoolId: req.school.id, ...req.body})
