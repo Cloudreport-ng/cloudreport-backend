@@ -37,8 +37,6 @@ router.post('/refresh', authController.refreshAuth)
 //   authController.updateMe
 // )
 
-
-
 router.post('/password/change/request',
   Auth(ROLE[Roles.user], true),
   authController.requestPasswordChange)

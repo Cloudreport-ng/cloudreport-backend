@@ -102,6 +102,26 @@ class SchoolService {
         return true
     }
 
+    async deleteInvite(data: DeleteInviteInput) {
+        if(!data.inviteId) throw new CustomError('inviteId cannot empty', 400)
+        if (!isValidObjectId(data.inviteId)) throw new CustomError('invalid inviteId', 401)
+
+        const invite = await prisma.invite.findFirst({
+            where:{
+                id:data.inviteId
+            }
+        })
+        if(!invite) throw new CustomError('invite not found', 404)
+
+        await prisma.invite.delete({
+            where:{
+                id:invite.id
+            }
+        })
+
+        return true
+    }
+
     async createClass(data: CreateClassInput) {
         if (!data.name || data.name == "") throw new CustomError('name cannot empty', 400)
         if (!data.colourCode || data.colourCode == 0) throw new CustomError('colour code is required', 400)

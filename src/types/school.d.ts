@@ -3,6 +3,11 @@ interface InviteInput {
     emails: string[]
 }
 
+interface DeleteInviteInput {
+    schoolId: string,
+    inviteId: string
+}
+
 interface CreateClassInput {
     schoolId: string,
     name: string,
