@@ -51,3 +51,10 @@ interface EditSchoolInput {
     name: string?,
     address: string?
 }
+
+interface PurchaseSlotsInput {
+    schoolId: string,
+    sessionId: string,
+    slots: number
+    payerName: string,
+}

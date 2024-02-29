@@ -1,4 +1,4 @@
-import { PrismaClient, TOKEN_TYPE } from "@prisma/client";
+import { PAYMENT_STATUS, PrismaClient, TOKEN_TYPE } from "@prisma/client";
 
 const prisma = new PrismaClient();
 import jsonwebtoken from 'jsonwebtoken'
@@ -9,7 +9,7 @@ import { customAlphabet } from 'nanoid'
 
 import MailService, { MailTemplate } from './mail.service'
 
-import {  URL } from '../config'
+import { URL } from '../config'
 
 
 import CustomError from '../utils/custom-error'
@@ -103,20 +103,20 @@ class SchoolService {
     }
 
     async deleteInvite(data: DeleteInviteInput) {
-        if(!data.inviteId) throw new CustomError('inviteId cannot empty', 400)
+        if (!data.inviteId) throw new CustomError('inviteId cannot empty', 400)
         if (!isValidObjectId(data.inviteId)) throw new CustomError('invalid inviteId', 401)
 
         const invite = await prisma.invite.findFirst({
-            where:{
-                id:data.inviteId,
-                school_id:data.schoolId
+            where: {
+                id: data.inviteId,
+                school_id: data.schoolId
             }
         })
-        if(!invite) throw new CustomError('invite not found', 404)
+        if (!invite) throw new CustomError('invite not found', 404)
 
         await prisma.invite.delete({
-            where:{
-                id:invite.id
+            where: {
+                id: invite.id
             }
         })
 
@@ -124,21 +124,21 @@ class SchoolService {
     }
 
     async deleteStaff(data: DeleteStaffInput) {
-        if(!data.staffId) throw new CustomError('staffId cannot empty', 400)
+        if (!data.staffId) throw new CustomError('staffId cannot empty', 400)
         if (!isValidObjectId(data.staffId)) throw new CustomError('invalid staffId', 401)
 
         const staff = await prisma.staff.findFirst({
-            where:{
-                id:data.staffId,
-                school_id:data.schoolId,
+            where: {
+                id: data.staffId,
+                school_id: data.schoolId,
                 role: SchoolRoles.staff
             }
         })
-        if(!staff) throw new CustomError('staff not found', 404)
+        if (!staff) throw new CustomError('staff not found', 404)
 
         await prisma.staff.delete({
-            where:{
-                id:staff.id
+            where: {
+                id: staff.id
             }
         })
 
@@ -172,7 +172,7 @@ class SchoolService {
 
     async createSession(data: CreateSessionInput) {
         if (!data.name || data.name == "") throw new CustomError('name cannot empty', 400)
-        if ((!data.students && data.students != 0) || typeof(data.students) !== "number") throw new CustomError('number of students must be specified', 400)
+        if ((!data.students && data.students != 0) || typeof (data.students) !== "number") throw new CustomError('number of students must be specified', 400)
 
         const src = await prisma.session.findFirst({
             where: {
@@ -300,6 +300,48 @@ class SchoolService {
             }
         })
         return true
+    }
+
+    async purchaseSlots(data: PurchaseSlotsInput) {
+        if (!data.sessionId || data.sessionId == "") throw new CustomError('current session not set', 400)
+        if (!data.payerName || data.payerName == "") throw new CustomError("specify payer's name", 400)
+        if (!data.slots || data.slots == 0) throw new CustomError('number of slots must be specified', 400)
+
+        //check reqy=uired input,
+
+
+        // find current price of slots,
+
+        const price: number = 250
+        // find current session
+
+        const session = await prisma.session.findFirst({
+            where: {
+                id:data.sessionId,
+                school_id:data.schoolId
+            }
+        })
+
+        if (!session) throw new CustomError('current session not specified', 404)
+        //determine amount
+
+        const amount = data.slots * price
+        console.log(amount)
+        // create payment
+        const newPayment = await prisma.payment.create({
+            data:{
+                slots:data.slots,
+                amount: String(amount),
+                payer_name: data.payerName,
+                status: PAYMENT_STATUS.PENDING,
+                session_id: data.sessionId,
+                school_id: data.schoolId
+            }
+        })
+
+        // notify platform admins
+
+        return newPayment
     }
 
 }

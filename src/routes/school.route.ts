@@ -14,6 +14,7 @@ router.delete('/delete-invite',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_R
 router.delete('/remove-staff',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.deleteStaff)
 router.post('/create-class',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.createClass)
 router.post('/create-session',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.createSession)
+router.post('/purchase-slots',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.purchaseSlots)
 router.put('/change-current-session',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.changeCurrentSession)
 router.put('/edit-class',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.editClass)
 router.put('/edit-session',auth(ROLE[Roles.user], true), schoolAuth(SCHOOL_ROLE[SchoolRoles.owner]), schoolController.editSession)

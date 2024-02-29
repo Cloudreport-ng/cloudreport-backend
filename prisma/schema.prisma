@@ -20,6 +20,11 @@ enum SCHOOL_ROLE {
   STAFF
 }
 
+enum PAYMENT_STATUS {
+  PENDING
+  SUCCESSFUL
+}
+
 enum TOKEN_TYPE {
   REFRESH_TOKEN
   CHANGE_PASSWORD
@@ -45,14 +50,14 @@ model User {
   Tokens         Token[]
 }
 
-model Invite{
+model Invite {
   id         String      @id @default(auto()) @map("_id") @db.ObjectId
   school_id  String      @db.ObjectId
   email      String
-  token      String     
+  token      String
   role       SCHOOL_ROLE
   invited_at DateTime?   @default(now())
-  school School @relation(fields: [school_id], references: [id])
+  school     School      @relation(fields: [school_id], references: [id])
 }
 
 model Token {
@@ -70,7 +75,7 @@ model School {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
   name              String
   address           String
-  current_session   String?    @db.ObjectId
+  current_session   String?   @db.ObjectId
   available_slots   Int       @default(0)
   all_session_slots Int       @default(0)
   all_time_slots    Int       @default(0)
@@ -80,6 +85,7 @@ model School {
   invites           Invite[]
   classes           Class[]
   sessions          Session[]
+  payments          Payment[]
 }
 
 model Class {
@@ -106,12 +112,34 @@ model Staff {
 }
 
 model Session {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  total_students   Int
-  paid_students    Int? @default(0)
-  school_id  String    @db.ObjectId
-  created_at DateTime? @default(now())
-  updated_at DateTime? @default(now())
-  school     School    @relation(fields: [school_id], references: [id])
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  total_students Int
+  paid_students  Int?      @default(0)
+  school_id      String    @db.ObjectId
+  created_at     DateTime? @default(now())
+  updated_at     DateTime? @default(now())
+  school         School    @relation(fields: [school_id], references: [id])
+  payments       Payment[]
+}
+
+model Payment {
+  id         String         @id @default(auto()) @map("_id") @db.ObjectId
+  slots      Int
+  amount     String
+  payer_name String
+  status     PAYMENT_STATUS @default(PENDING)
+  session_id String         @db.ObjectId
+  school_id  String         @db.ObjectId
+  created_at DateTime?      @default(now())
+  updated_at DateTime?      @default(now())
+  school     School         @relation(fields: [school_id], references: [id])
+  session    Session        @relation(fields: [session_id], references: [id])
+}
+
+model Account {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  bank             String
+  account_name     String
+  account_number   String
 }
