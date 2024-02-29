@@ -143,3 +143,10 @@ model Account {
   account_name     String
   account_number   String
 }
+
+model Site {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  price            Float       @default(0.0)
+  email            String       @default("admin@cloudreport.com")
+  email_password   String       @default("password")
+}
