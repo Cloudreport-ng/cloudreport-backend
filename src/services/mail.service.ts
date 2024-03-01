@@ -9,7 +9,8 @@ export enum MailTemplate {
   passwordResetRequested = 'Password Reset Requested',
   staffInvitation = 'You have been Invited To CloudReport',
   passwordUpdated = 'Password Updated',
-  welcome = 'welcome'
+  welcome = 'welcome',
+  newPayment = 'You have a new pending payment'
 }
 
 const templates = {
@@ -19,6 +20,8 @@ const templates = {
   [MailTemplate.staffInvitation]: 'invitation.html',
   [MailTemplate.passwordResetRequested]: 'reset-password-request.html',
   [MailTemplate.passwordUpdated]: 'password-updated.html',
+  [MailTemplate.newPayment]: 'new-payment.html'
+  
 }
 
 class MailService {

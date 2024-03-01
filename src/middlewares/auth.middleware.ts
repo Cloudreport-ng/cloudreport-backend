@@ -121,6 +121,8 @@ export const schoolAuth = (schoolRoles: string[] = []) => {
 
         if (!schoolRoles.includes(staff.role)) throw new CustomError('unauthorized access', 401)
 
+        if(!staff.school.active) throw new CustomError('school has been deactivated. contact platform admin')
+
         req.school = staff.school
         next()
     }

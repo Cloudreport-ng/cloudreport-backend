@@ -13,7 +13,7 @@ import { URL } from '../config'
 
 
 import CustomError from '../utils/custom-error'
-import { SchoolRoles } from "../types/dynamic";
+import { Roles, SchoolRoles } from "../types/dynamic";
 import { INTEGER } from "sequelize";
 
 // Regular expression to match MongoDB ObjectId format
@@ -311,14 +311,21 @@ class SchoolService {
 
 
         // find current price of slots,
+        const site = await prisma.site.findFirst({})
+        if(!site) throw new CustomError('site error',500)
 
-        const price: number = 250
+console.log(site)
+        const price: number = site.price
         // find current session
 
         const session = await prisma.session.findFirst({
             where: {
                 id:data.sessionId,
                 school_id:data.schoolId
+            },
+            select:{
+                id:true,
+                school: true
             }
         })
 
@@ -340,6 +347,23 @@ class SchoolService {
         })
 
         // notify platform admins
+
+        const admins = await prisma.user.findMany({
+            where:{
+                role: Roles.admin
+            }
+        })
+        if(admins.length> 0){
+            for (const admin of admins) {
+
+                await MailService.sendTemplate<{ link: string,amount: string, school: string }>(
+                    MailTemplate.newPayment,
+                    'You have a new pending payment',
+                    { email: admin.email },
+                    { link: `${URL.CLIENT_URL}/admin-dashboard`,amount: newPayment.amount, school: session.school.name }
+                )
+            }
+        }
 
         return newPayment
     }

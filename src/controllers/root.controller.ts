@@ -30,6 +30,31 @@ class RootController {
     const result = await RootService.setPrice(req.body)
     res.status(201).send(response('updated', result))
   }
+
+  async activeSchools(req: Request, res: Response) {
+    const result = await RootService.activeSchools()
+    res.status(201).send(response('active', result))
+  }
+
+  async inactiveSchools(req: Request, res: Response) {
+    const result = await RootService.inactiveSchools()
+    res.status(201).send(response('inactive', result))
+  }
+
+  async activateSchool(req: Request, res: Response) {
+    const result = await RootService.activateSchool(req.body.schoolId)
+    res.status(201).send(response('activated', result))
+  }
+
+  async deactivateSchool(req: Request, res: Response) {
+    const result = await RootService.deactivateSchool(req.body.schoolId)
+    res.status(201).send(response('deactivated', result))
+  }
+
+  async pendingPayments(req: Request, res: Response) {
+    const result = await RootService.getPendingPayments()
+    res.status(201).send(response('', result))
+  }
 }
 
 export default new RootController()

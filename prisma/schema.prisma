@@ -79,6 +79,7 @@ model School {
   available_slots   Int       @default(0)
   all_session_slots Int       @default(0)
   all_time_slots    Int       @default(0)
+  active            Boolean   @default(true) 
   created_at        DateTime? @default(now())
   updated_at        DateTime? @default(now())
   staffs            Staff[]
@@ -132,7 +133,7 @@ model Payment {
   session_id String         @db.ObjectId
   school_id  String         @db.ObjectId
   created_at DateTime?      @default(now())
-  updated_at DateTime?      @default(now())
+  approved_at DateTime?      
   school     School         @relation(fields: [school_id], references: [id])
   session    Session        @relation(fields: [session_id], references: [id])
 }

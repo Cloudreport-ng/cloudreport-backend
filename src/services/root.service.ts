@@ -109,12 +109,12 @@ class RootService {
 
     let site = await prisma.site.findFirst()
 
-    if(!site){
+    if (!site) {
       await this.fixApp()
       site = await prisma.site.findFirst()
     }
 
-    if(!site) throw new CustomError('an error occured', 500)
+    if (!site) throw new CustomError('an error occured', 500)
 
 
     await prisma.site.update({
@@ -129,6 +129,106 @@ class RootService {
     return true
   }
 
+  async activeSchools() {
+    const schools = await prisma.school.findMany({
+      where: {
+        active: true
+      }
+    })
+
+    return schools
+  }
+
+  async inactiveSchools() {
+    const schools = await prisma.school.findMany({
+      where: {
+        active: false
+      }
+    })
+
+    return schools
+  }
+
+  async activateSchool(schoolId: string) {
+    if (!schoolId) throw new CustomError('shool id not specified', 401)
+
+    const school = await prisma.school.findFirst({
+      where: {
+        id: schoolId
+      }
+    })
+
+    if (!school) throw new CustomError('school not found', 404)
+
+    if (school.active) throw new CustomError('school is already active', 401)
+
+    await prisma.school.update({
+      where: {
+        id: school.id
+      },
+      data: {
+        active: true
+      }
+    })
+
+    return true
+  }
+
+  async deactivateSchool(schoolId: string) {
+    if (!schoolId) throw new CustomError('shool id not specified', 401)
+
+    const school = await prisma.school.findFirst({
+      where: {
+        id: schoolId
+      }
+    })
+
+    if (!school) throw new CustomError('school not found', 404)
+
+    if (!school.active) throw new CustomError('school is already inactive', 401)
+
+    await prisma.school.update({
+      where: {
+        id: school.id
+      },
+      data: {
+        active: false
+      }
+    })
+
+    return true
+  }
+
+  async getPendingPayments() {
+    const payments = await prisma.payment.findMany({
+      where: {
+        status: PAYMENT_STATUS.PENDING,
+      },
+      select: {
+        id: true,
+        slots: true,
+        amount: true,
+        status: true,
+        school: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        session: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        created_at: true,
+        approved_at: true
+
+      }
+    })
+
+    return payments.reverse()
+  }
 }
 
 export default new RootService()
