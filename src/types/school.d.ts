@@ -55,6 +55,11 @@ interface EditSchoolInput {
 interface PurchaseSlotsInput {
     schoolId: string,
     sessionId: string,
-    slots: number
+    slots: number,
     payerName: string,
+}
+
+interface SettingsDashboard {
+    schoolId: string,
+    userId: string,
 }

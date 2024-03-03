@@ -26,6 +26,191 @@ function isValidObjectId(id: string): boolean {
 
 
 class SchoolService {
+
+    async settingsDashboard(data: SettingsDashboard) {
+        if (!data.schoolId || data.schoolId == "") throw new CustomError('an error occured', 500)
+        if (!data.userId || data.userId == "") throw new CustomError('an error occured', 500)
+        const raw = await prisma.user.findFirst({
+            where: {
+                id: data.userId
+            },
+            select: {
+                id: true,
+                first_name: true,
+                last_name: true,
+                email: true,
+                Staff: {
+                    where: {
+                        school_id: data.schoolId
+                    },
+                    select: {
+                        role: true,
+                        title: true,
+                        created_at: true,
+                        school: {
+                            select: {
+                                id: true,
+                                name: true,
+                                current_session: true,
+                                classes: {
+                                    select: {
+                                        id: true
+                                    }
+                                },
+                                staffs: {
+                                    select: {
+                                        id: true
+                                    }
+                                },
+                                sessions: {
+                                    select: {
+                                        id: true
+                                    }
+                                },
+                                payments: {
+                                    select: {
+                                        id: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+        if (!raw) throw new CustomError('an error occured', 500)
+
+        let dashboard: any = {
+            first_name: raw.first_name,
+            last_name: raw.last_name,
+            email: raw.email,
+            role: raw.Staff[0].role,
+            title: raw.Staff[0].title,
+            school: {
+                id: raw.Staff[0].school.id,
+                name: raw.Staff[0].school.name,
+                students: 0,
+                classes: raw.Staff[0].school.classes.length,
+                staffs: raw.Staff[0].school.staffs.length,
+                sessions: raw.Staff[0].school.sessions.length,
+                payments: raw.Staff[0].school.payments.length,
+            }
+
+        }
+
+
+        if (raw.Staff[0].school.current_session) {
+            const sessionRaw = await prisma.session.findFirst({
+                where: {
+                    id: raw.Staff[0].school.current_session
+                }
+            })
+            if (!sessionRaw) throw new CustomError('an error occured', 500)
+
+            dashboard.school.students = sessionRaw.total_students
+
+        }
+        return dashboard
+    }
+
+    async settingsClasses(schoolId: string) {
+        if (!schoolId || schoolId == "") throw new CustomError('an error occured', 500)
+
+        const raw = await prisma.school.findFirst({
+            where: {
+                id: schoolId
+            },
+            select: {
+                id: true,
+                current_session: true,
+                classes: {
+                    select:{
+                        id:true,
+                        name: true,
+                        colour_code: true
+                    }
+                },
+                sessions: {
+                    select: {
+                        id: true,
+                        name: true,
+                        total_students: true,
+                    }
+                }
+            }
+        })
+
+        if (!raw) throw new CustomError('an error occured', 500)
+
+        let dashboard: any = {
+            class_count: raw.classes.length,
+            session_count: raw.sessions.length,
+            current_session: {
+                id: null,
+                name: null
+            },
+            classes: raw.classes.reverse(),
+            sessions: raw.sessions.reverse()
+        }
+
+        if (raw.current_session) {
+            const sessionRaw = await prisma.session.findFirst({
+                where: {
+                    id: raw.current_session,
+                    school_id: raw.id
+                }
+            })
+            if (!sessionRaw) throw new CustomError('an error occured', 500)
+
+            dashboard.current_session = {
+                id: sessionRaw.id,
+                name: sessionRaw.name
+            }
+
+        }
+        return dashboard
+    }
+
+    async getSchool(schoolId: string) {
+        if (!schoolId || schoolId == "") throw new CustomError('school id required', 500)
+
+        const raw = await prisma.school.findFirst({
+            where: {
+                id: schoolId
+            },
+            select: {
+                id: true,
+                name: true,
+                current_session: true
+            }
+        })
+
+        if (!raw) throw new CustomError('an error occured', 500)
+        let school: any = {
+            id: raw.id,
+            name: raw.name,
+            students: 0
+        }
+
+        if (raw.current_session) {
+            const sessionRaw = await prisma.session.findFirst({
+                where: {
+                    id: raw.current_session,
+                    school_id: raw.id
+                }
+            })
+
+            if (!sessionRaw) throw new CustomError('an error occured', 500)
+
+            school.students = sessionRaw.total_students
+
+        }
+
+        return school
+    }
+
+
     async editSchool(data: EditSchoolInput) {
 
         let raw: any = {}
@@ -312,19 +497,19 @@ class SchoolService {
 
         // find current price of slots,
         const site = await prisma.site.findFirst({})
-        if(!site) throw new CustomError('site error',500)
+        if (!site) throw new CustomError('site error', 500)
 
-console.log(site)
+        console.log(site)
         const price: number = site.price
         // find current session
 
         const session = await prisma.session.findFirst({
             where: {
-                id:data.sessionId,
-                school_id:data.schoolId
+                id: data.sessionId,
+                school_id: data.schoolId
             },
-            select:{
-                id:true,
+            select: {
+                id: true,
                 school: true
             }
         })
@@ -336,8 +521,8 @@ console.log(site)
         console.log(amount)
         // create payment
         const newPayment = await prisma.payment.create({
-            data:{
-                slots:data.slots,
+            data: {
+                slots: data.slots,
                 amount: String(amount),
                 payer_name: data.payerName,
                 status: PAYMENT_STATUS.PENDING,
@@ -349,18 +534,18 @@ console.log(site)
         // notify platform admins
 
         const admins = await prisma.user.findMany({
-            where:{
+            where: {
                 role: Roles.admin
             }
         })
-        if(admins.length> 0){
+        if (admins.length > 0) {
             for (const admin of admins) {
 
-                await MailService.sendTemplate<{ link: string,amount: string, school: string }>(
+                await MailService.sendTemplate<{ link: string, amount: string, school: string }>(
                     MailTemplate.newPayment,
                     'You have a new pending payment',
                     { email: admin.email },
-                    { link: `${URL.CLIENT_URL}/admin-dashboard`,amount: newPayment.amount, school: session.school.name }
+                    { link: `${URL.CLIENT_URL}/admin-dashboard`, amount: newPayment.amount, school: session.school.name }
                 )
             }
         }

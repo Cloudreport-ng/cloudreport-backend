@@ -30,13 +30,6 @@ class UserService {
                 country: true,
                 role: true,
                 email: true,
-                Staff: {
-                    select: {
-                        role: true,
-                        title: true,
-                        school: true
-                    }
-                }
             }
         })
 
