@@ -19,7 +19,7 @@ router.get('/settings-payments', auth(ROLE[Roles.admin], true), rootController.s
 router.post('/add-account', auth(ROLE[Roles.admin], true), rootController.addAccount)
 router.put('/activate-school', auth(ROLE[Roles.admin], true), rootController.activateSchool)
 router.put('/deactivate-school', auth(ROLE[Roles.admin], true), rootController.deactivateSchool)
-router.post('/fix-app', auth(ROLE[Roles.admin], true), rootController.fixApp)
+router.get('/fix-app', auth(ROLE[Roles.admin], true), rootController.fixApp)
 router.put('/set-price', auth(ROLE[Roles.admin], true), rootController.setPrice)
 router.put('/edit-account', auth(ROLE[Roles.admin], true), rootController.editAccount)
 router.delete('/delete-account', auth(ROLE[Roles.admin], true), rootController.deleteAccount)
