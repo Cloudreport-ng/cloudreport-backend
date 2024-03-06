@@ -26,6 +26,12 @@ class RootController {
     res.status(201).send(response('fixed', result))
   }
 
+  async approvePayment(req: Request, res: Response) {
+    const paymentId = req.body.paymentId
+    const result = await RootService.approvePayment(paymentId)
+    res.status(201).send(response('approved', result))
+  }
+
   async setPrice(req: Request, res: Response) {
     const result = await RootService.setPrice(req.body)
     res.status(201).send(response('updated', result))
@@ -53,6 +59,16 @@ class RootController {
 
   async pendingPayments(req: Request, res: Response) {
     const result = await RootService.getPendingPayments()
+    res.status(201).send(response('', result))
+  }
+
+  async approvedPayments(req: Request, res: Response) {
+    const result = await RootService.getApprovedPayments()
+    res.status(201).send(response('', result))
+  }
+
+  async settingsPayments(req: Request, res: Response) {
+    const result = await RootService.settingsPayments()
     res.status(201).send(response('', result))
   }
 }

@@ -125,8 +125,8 @@ class SchoolService {
                 id: true,
                 current_session: true,
                 classes: {
-                    select:{
-                        id:true,
+                    select: {
+                        id: true,
                         name: true,
                         colour_code: true
                     }
@@ -172,6 +172,55 @@ class SchoolService {
         return dashboard
     }
 
+    async settingsPayments(schoolId: string) {
+        if (!schoolId || schoolId == "") throw new CustomError('an error occured', 500)
+
+        const raw = await prisma.school.findFirst({
+            where: {
+                id: schoolId
+            },
+            select: {
+                id: true,
+                current_session: true,
+                payments: true
+            }
+        })
+        if (!raw) throw new CustomError('an error occured', 500)
+
+        const accounts = await prisma.account.findMany()
+        const site = await prisma.site.findFirst()
+
+        if (!site) throw new CustomError('an error occured', 500)
+
+        let payments: any = {
+            currentSession: null,
+            totalStudents: 0,
+            paidStudents: 0,
+            remainingStudents: 0,
+            price: site.price,
+            payments: raw?.payments,
+            accounts: accounts
+        }
+
+
+        if (raw.current_session) {
+            const session = await prisma.session.findFirst({
+                where: {
+                    id: raw.current_session,
+                    school_id: schoolId
+                }
+            })
+            if (session) {
+                payments.currentSession = session.name,
+                    payments.totalStudents = session.total_students,
+                    payments.paidStudents = session.paid_students,
+                    payments.remainingStudents = payments.totalStudents - payments.paidStudents
+            }
+        }
+
+        return payments
+    }
+
     async getSchool(schoolId: string) {
         if (!schoolId || schoolId == "") throw new CustomError('school id required', 500)
 
@@ -209,6 +258,37 @@ class SchoolService {
 
         return school
     }
+
+    async getStaff(schoolId: string) {
+        if (!schoolId || schoolId == "") throw new CustomError('school id required', 500)
+
+        const raw = await prisma.staff.findMany({
+            where: {
+                school_id: schoolId
+            },
+            select: {
+                id: true,
+                title: true,
+                role: true,
+                user: {
+                    select: {
+                        id: true,
+                        first_name: true,
+                        last_name: true,
+                        email: true
+                    }
+                },
+                school: {
+                    select: {
+                        name: true,
+                    }
+                }
+            }
+        })
+
+        return raw
+    }
+
 
 
     async editSchool(data: EditSchoolInput) {

@@ -11,15 +11,28 @@ class SchoolController {
     const result = await SchoolService.settingsDashboard({ schoolId, userId: req.user.id })
     res.status(201).send(response('', result))
   }
+
   async getSettingsClasses(req: Request, res: Response) {
     const schoolId = req.school.id
     const result = await SchoolService.settingsClasses(schoolId)
     res.status(201).send(response('', result))
   }
 
+  async getSettingsPayments(req: Request, res: Response) {
+    const schoolId = req.school.id
+    const result = await SchoolService.settingsPayments(schoolId)
+    res.status(201).send(response('', result))
+  }
+
   async getSchool(req: Request, res: Response) {
     const schoolId = req.school.id
     const result = await SchoolService.getSchool(schoolId)
+    res.status(201).send(response('', result))
+  }
+
+  async getStaff(req: Request, res: Response) {
+    const schoolId = req.school.id
+    const result = await SchoolService.getStaff(schoolId)
     res.status(201).send(response('', result))
   }
 

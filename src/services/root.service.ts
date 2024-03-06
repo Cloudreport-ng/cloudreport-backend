@@ -229,6 +229,132 @@ class RootService {
 
     return payments.reverse()
   }
+
+  async getApprovedPayments() {
+    const payments = await prisma.payment.findMany({
+      where: {
+        status: PAYMENT_STATUS.APPROVED,
+      },
+      select: {
+        id: true,
+        slots: true,
+        amount: true,
+        status: true,
+        school: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        session: {
+          select: {
+            id: true,
+            name: true
+          }
+        },
+        created_at: true,
+        approved_at: true
+
+      }
+    })
+
+    return payments.reverse()
+  }
+
+  async settingsPayments() {
+    const accounts = await prisma.account.findMany()
+    const site = await prisma.site.findFirst()
+
+    let payments:any = {
+      accounts,
+      price: null
+    }
+
+    if(site) payments.price = site.price
+
+    return payments
+  }
+
+  async approvePayment(paymentId: string) {
+    // checke for input
+    if (!paymentId || paymentId === "") throw new CustomError('paymentId is required', 400)
+    if (!isValidObjectId) throw new CustomError('invalid payment id', 400)
+    //////// search for payment
+    const payment = await prisma.payment.findFirst({
+      where: {
+        id: paymentId
+      }
+    })
+
+    /// if no payment retuirn error
+    if (!payment) throw new CustomError('payment not found', 404)
+
+    /// if payment is !pending return erro
+    if (payment.status !== PAYMENT_STATUS.PENDING) throw new CustomError('payment is not pending', 400)
+
+    //  change payment status to approved
+    await prisma.payment.update({
+      where: {
+        id: payment.id
+      },
+      data: {
+        status: PAYMENT_STATUS.APPROVED,
+        approved_at: new Date(Date.now())
+      }
+    })
+    // find session
+    const session = await prisma.session.findFirst({
+      where: {
+        id: payment.session_id
+      },
+      select: {
+        id: true,
+        school: {
+          select: {
+            name: true,
+            staffs: {
+              where: {
+                role: SchoolRoles.owner
+              },
+              select: {
+                user: {
+                  select: {
+                    email: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    console.log(session)
+
+    /// add slots to session
+    if (session) {
+      await prisma.session.update({
+        where: {
+          id: payment.session_id
+        },
+        data: {
+          paid_students: payment.slots,
+          updated_at: new Date(Date.now())
+        }
+      })
+
+      // inform admin by email
+      await MailService.sendTemplate<{ link: string, amount: string, school: string }>(
+        MailTemplate.approvedPayment,
+        'Hurray, Your payment has been approved',
+        { email: session.school.staffs[0].user.email },
+        { link: `${URL.CLIENT_URL}/dashboard`, amount: payment.amount, school: session.school.name }
+      )
+    }
+
+    return true
+
+  }
 }
 
 export default new RootService()

@@ -10,7 +10,8 @@ export enum MailTemplate {
   staffInvitation = 'You have been Invited To CloudReport',
   passwordUpdated = 'Password Updated',
   welcome = 'welcome',
-  newPayment = 'You have a new pending payment'
+  newPayment = 'You have a new pending payment',
+  approvedPayment = 'Your payment has been approved'
 }
 
 const templates = {
@@ -20,7 +21,10 @@ const templates = {
   [MailTemplate.staffInvitation]: 'invitation.html',
   [MailTemplate.passwordResetRequested]: 'reset-password-request.html',
   [MailTemplate.passwordUpdated]: 'password-updated.html',
-  [MailTemplate.newPayment]: 'new-payment.html'
+  [MailTemplate.newPayment]: 'new-payment.html',
+  [MailTemplate.approvedPayment]: 'approved-payment.html'
+
+
   
 }
 
