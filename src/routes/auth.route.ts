@@ -26,6 +26,12 @@ router.post(
   authController.finishOnboarding
 )
 
+router.post(
+  '/logout',
+  Auth(ROLE[Roles.user], true),
+  authController.logout
+)
+
 router.post('/refresh', authController.refreshAuth)
 
 // router.get('/me', Auth(ROLE[Roles.user], false), authController.me)

@@ -292,6 +292,26 @@ class AuthService {
         return full
     }
 
+    async logout(data: any) {
+        const token = await prisma.token.findFirst({
+            where:{
+                user_Id: data.userId,
+                type: TOKEN_TYPE.REFRESH_TOKEN
+            }
+        })
+        if(!token ) return {message: "loggedout"}
+
+        await prisma.token.delete({
+            where:{
+                id:  token.id
+            }
+        })
+
+        return {message: "loggedout"}
+    }
+
+    
+
     async refreshAccessToken(data: RefreshTokenInput) {
         if (!data.refreshToken) throw new CustomError('refresh token is required', 400)
         const decoded: any = jsonwebtoken.verify(
@@ -476,6 +496,7 @@ class AuthService {
 
         return true
     }
+
 
 
 }

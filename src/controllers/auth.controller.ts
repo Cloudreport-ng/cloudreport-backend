@@ -59,6 +59,13 @@ class AuthController {
     res.status(201).send(response('welcome onboard', result))
   }
 
+  async logout(req: Request, res: Response) {
+    const result = await AuthService.logout({
+      userId: req.user.id
+    })
+    res.status(201).send(response('welcome onboard', result))
+  }
+
   async refreshAuth(req: Request, res: Response) {
     const result = await AuthService.refreshAccessToken(req.body)
     res.status(200).send(response('Authorization refresh', result))
