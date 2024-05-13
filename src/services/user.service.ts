@@ -30,6 +30,7 @@ class UserService {
                 country: true,
                 role: true,
                 email: true,
+                email_verified: true,
                 Staff:{
                     include:{
                         school: true
