@@ -30,6 +30,11 @@ class UserService {
                 country: true,
                 role: true,
                 email: true,
+                Staff:{
+                    include:{
+                        school: true
+                    }
+                }
             }
         })
 

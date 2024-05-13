@@ -33,6 +33,17 @@ enum TOKEN_TYPE {
   VERIFY_EMAIL
 }
 
+enum TERM {
+  first
+  second
+  third
+}
+
+enum GENDER {
+  male
+  female
+}
+
 model User {
   id             String    @id @default(auto()) @map("_id") @db.ObjectId
   first_name     String?
@@ -80,7 +91,7 @@ model School {
   available_slots   Int       @default(0)
   all_session_slots Int       @default(0)
   all_time_slots    Int       @default(0)
-  active            Boolean   @default(true) 
+  active            Boolean   @default(true)
   created_at        DateTime? @default(now())
   updated_at        DateTime? @default(now())
   staffs            Staff[]
@@ -125,30 +136,65 @@ model Session {
   payments       Payment[]
 }
 
+model StudentReport {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  student_id      String
+  session_id      String           @db.ObjectId
+  school_id       String           @db.ObjectId
+  class_id        String           @db.ObjectId
+  term            TERM
+  name            String
+  gender          GENDER
+  age             Int
+  published       DateTime?
+  teacher         String
+  teacher_remark  String
+  principal       String
+  academic_report AcademicReport[]
+  other_report    OtherReport[]
+}
+
+model AcademicReport {
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  subject           String
+  ca_score          Float
+  exam_score        Float
+  StudentReport     StudentReport? @relation(fields: [studentReport_id], references: [id])
+  studentReport_id   String?        @db.ObjectId
+}
+
+model OtherReport {
+  id                String         @id @default(auto()) @map("_id") @db.ObjectId
+  subject           String
+  score             Int
+  StudentReport     StudentReport? @relation(fields: [studentReport_id], references: [id])
+  studentReport_id   String?        @db.ObjectId
+}
+
 model Payment {
-  id         String         @id @default(auto()) @map("_id") @db.ObjectId
-  slots      Int
-  amount     String
-  payer_name String
-  status     PAYMENT_STATUS @default(PENDING)
-  session_id String         @db.ObjectId
-  school_id  String         @db.ObjectId
-  created_at DateTime?      @default(now())
-  approved_at DateTime?      
-  school     School         @relation(fields: [school_id], references: [id])
-  session    Session        @relation(fields: [session_id], references: [id])
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  slots       Int
+  amount      String
+  payer_name  String
+  status      PAYMENT_STATUS @default(PENDING)
+  session_id  String         @db.ObjectId
+  school_id   String         @db.ObjectId
+  created_at  DateTime?      @default(now())
+  approved_at DateTime?
+  school      School         @relation(fields: [school_id], references: [id])
+  session     Session        @relation(fields: [session_id], references: [id])
 }
 
 model Account {
-  id               String         @id @default(auto()) @map("_id") @db.ObjectId
-  bank             String
-  account_name     String
-  account_number   String
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  bank           String
+  account_name   String
+  account_number String
 }
 
 model Site {
-  id               String       @id @default(auto()) @map("_id") @db.ObjectId
-  price            Float       @default(0.0)
-  email            String       @default("admin@cloudreport.com")
-  email_password   String       @default("password")
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  price          Float  @default(0.0)
+  email          String @default("admin@cloudreport.com")
+  email_password String @default("password")
 }

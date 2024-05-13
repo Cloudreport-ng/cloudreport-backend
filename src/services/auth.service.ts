@@ -58,6 +58,13 @@ class AuthService {
         let user = await prisma.user.findFirst({
             where: {
                 email: data.email
+            },
+            include:{
+                Staff:{
+                    include:{
+                        school: true
+                    }
+                }
             }
         })
 
