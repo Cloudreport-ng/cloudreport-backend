@@ -310,8 +310,6 @@ class AuthService {
         return {message: "loggedout"}
     }
 
-    
-
     async refreshAccessToken(data: RefreshTokenInput) {
         if (!data.refreshToken) throw new CustomError('refresh token is required', 400)
         const decoded: any = jsonwebtoken.verify(

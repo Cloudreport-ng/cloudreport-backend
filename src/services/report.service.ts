@@ -41,7 +41,7 @@ class ReportService {
 
     const session = await prisma.session.findFirst({
       where: {
-        id: data.session_id_id,
+        id: data.session_id,
         school_id:school_id
       }
     })
