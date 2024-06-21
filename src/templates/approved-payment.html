@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Approved</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f7ff;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007bff;
+            text-align: center;
+        }
+        p {
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Payment Approved</h1>
+        <p>Your payment of <strong>{{amount}}</strong> for <strong>{{school}}</strong> has been approved successfully.</p>
+        <p>Thank you for your payment!</p>
+        <p>If you have any questions, please feel free to contact us.</p>
+        <p><a href="{{link}}" class="button">Visit Dashboard</a></p>
+    </div>
+</body>
+</html>

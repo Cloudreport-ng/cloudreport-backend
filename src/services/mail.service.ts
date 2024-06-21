@@ -5,16 +5,27 @@ import { EMAIL_USER, EMAIL_PASSWORD } from '../config'
 
 export enum MailTemplate {
   emailVerify = 'Email Verify Requested',
+  changePassword = 'Password Change Requested',
   passwordResetRequested = 'Password Reset Requested',
+  staffInvitation = 'You have been Invited To CloudReport',
   passwordUpdated = 'Password Updated',
-  welcome = 'welcome'
+  welcome = 'welcome',
+  newPayment = 'You have a new pending payment',
+  approvedPayment = 'Your payment has been approved'
 }
 
 const templates = {
   [MailTemplate.emailVerify]: 'email-verify.html',
+  [MailTemplate.changePassword]: 'change-password-verify.html',
   [MailTemplate.welcome]: 'welcome.html',
+  [MailTemplate.staffInvitation]: 'invitation.html',
   [MailTemplate.passwordResetRequested]: 'reset-password-request.html',
   [MailTemplate.passwordUpdated]: 'password-updated.html',
+  [MailTemplate.newPayment]: 'new-payment.html',
+  [MailTemplate.approvedPayment]: 'approved-payment.html'
+
+
+  
 }
 
 class MailService {
@@ -25,6 +36,8 @@ class MailService {
     args?: IArgs
   ) {
     let argsData = args ? args : {}
+
+    console.log("entered func")
 
     // Retrieve Markup
     let templateMarkup: string = fs.readFileSync(
@@ -40,7 +53,7 @@ class MailService {
       const regex = new RegExp(`{{${key}}}`, 'g')
       templateMarkup = templateMarkup.replace(regex, value)
     })
-
+    console.log("replaced succeful")
     const mailOptions = {
       from: EMAIL_USER,
       to: user.email,
@@ -49,6 +62,7 @@ class MailService {
     }
 
     try {
+      console.log("trying to send")
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
@@ -59,6 +73,7 @@ class MailService {
         },
       })
       await transporter.sendMail(mailOptions)
+      console.log("replaced sent succefull")
     } catch (err) {
       console.log(err)
     }
